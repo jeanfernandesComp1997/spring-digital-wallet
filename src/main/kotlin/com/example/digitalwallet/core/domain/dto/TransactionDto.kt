@@ -6,8 +6,8 @@ import java.util.UUID
 
 data class TransactionDto(
     val id: UUID,
-    val payer: UUID,
-    val payee: UUID,
+    val payerWallet: WalletDto,
+    val payeeWallet: WalletDto,
     val amount: BigDecimal,
     val date: ZonedDateTime
 )

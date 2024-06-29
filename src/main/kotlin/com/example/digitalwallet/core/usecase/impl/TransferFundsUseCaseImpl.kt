@@ -41,7 +41,7 @@ class TransferFundsUseCaseImpl(
 
         walletUpdateDataSourceGateway.execute(payerWalletDto, payeeWalletDto)
 
-        val transaction = Transaction(payerWallet.id, payerWallet.id, input.value)
+        val transaction = Transaction(payerWallet, payerWallet, input.value)
         val transactionDto = transactionMapper.toDto(transaction)
         registerTransactionDataSourceGateway.execute(transactionDto)
 

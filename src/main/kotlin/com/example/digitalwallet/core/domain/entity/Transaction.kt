@@ -10,16 +10,16 @@ class Transaction {
 
     var id: UUID
         private set
-    var payerWallet: UUID
+    var payerWallet: Wallet
         private set
-    var payeeWallet: UUID
+    var payeeWallet: Wallet
         private set
     var amount: BigDecimal
         private set
     var date: ZonedDateTime
         private set
 
-    constructor(payerWallet: UUID, payeeWallet: UUID, amount: BigDecimal) {
+    constructor(payerWallet: Wallet, payeeWallet: Wallet, amount: BigDecimal) {
         require(amount > BigDecimal(0)) { InvalidTransactionException() }
         this.id = UUID.randomUUID()
         this.payerWallet = payerWallet
@@ -28,7 +28,7 @@ class Transaction {
         this.date = ZonedDateTime.now(ZoneOffset.UTC)
     }
 
-    constructor(id: UUID, payerWallet: UUID, payeeWallet: UUID, amount: BigDecimal, date: ZonedDateTime) {
+    constructor(id: UUID, payerWallet: Wallet, payeeWallet: Wallet, amount: BigDecimal, date: ZonedDateTime) {
         require(amount > BigDecimal(0)) { InvalidTransactionException() }
         this.id = id
         this.payerWallet = payerWallet

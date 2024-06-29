@@ -9,20 +9,20 @@ class Wallet {
 
     var id: UUID
         private set
-    var userId: UUID
+    var user: User
         private set
     var balance: BigDecimal
         private set
 
-    constructor(userId: String) {
+    constructor(user: User) {
         this.id = UUID.randomUUID()
-        this.userId = UUID.fromString(userId)
+        this.user = user
         this.balance = BigDecimal(0)
     }
 
-    constructor(id: String, userId: String, balance: BigDecimal) {
-        this.id = UUID.fromString(userId)
-        this.userId = UUID.fromString(userId)
+    constructor(id: String, user: User, balance: BigDecimal) {
+        this.id = UUID.fromString(id)
+        this.user = user
         this.balance = balance
     }
 
