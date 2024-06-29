@@ -4,5 +4,5 @@ import com.example.digitalwallet.core.domain.dto.TransactionAuthorizationDto
 
 interface ExternalTransactionAuthorizerGateway {
 
-    fun checkTransactionAuthorization(): TransactionAuthorizationDto
+    fun checkTransactionAuthorization(payerId: String, payeeId: String): TransactionAuthorizationDto
 }

@@ -40,7 +40,7 @@ class User {
     }
 
     constructor(
-        id: String,
+        id: UUID,
         firstName: String,
         lastName: String,
         email: String,
@@ -48,7 +48,7 @@ class User {
         document: String,
         password: String
     ) {
-        this.id = UUID.fromString(id)
+        this.id = id
         this.firstName = firstName
         this.lastName = lastName
         this.email = Email(email)

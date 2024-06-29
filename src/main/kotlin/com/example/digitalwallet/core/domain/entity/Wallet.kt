@@ -1,5 +1,7 @@
 package com.example.digitalwallet.core.domain.entity
 
+import com.example.digitalwallet.core.domain.enums.UserType
+import com.example.digitalwallet.core.domain.exception.ForbiddenTransactionException
 import com.example.digitalwallet.core.domain.exception.InsufficientBalanceException
 import com.example.digitalwallet.core.domain.exception.InvalidTransactionValueException
 import java.math.BigDecimal
@@ -14,19 +16,20 @@ class Wallet {
     var balance: BigDecimal
         private set
 
+    constructor(id: UUID, user: User, balance: BigDecimal) {
+        this.id = id
+        this.user = user
+        this.balance = balance
+    }
+
     constructor(user: User) {
         this.id = UUID.randomUUID()
         this.user = user
         this.balance = BigDecimal(0)
     }
 
-    constructor(id: String, user: User, balance: BigDecimal) {
-        this.id = UUID.fromString(id)
-        this.user = user
-        this.balance = balance
-    }
-
     fun debit(value: BigDecimal) {
+        checkIfDebitIsAllowedByUserType()
         checkIfTransferValueIsValid(value)
         checkIfThereSufficientBalanceForTransfer(value)
         balance -= value
@@ -37,7 +40,12 @@ class Wallet {
         balance += value
     }
 
-    fun checkIfThereSufficientBalanceForTransfer(value: BigDecimal) {
+    fun checkHasBalance() {
+        if (balance < BigDecimal(0))
+            throw InsufficientBalanceException()
+    }
+
+    private fun checkIfThereSufficientBalanceForTransfer(value: BigDecimal) {
         if (balance < value)
             throw InsufficientBalanceException()
     }
@@ -45,5 +53,10 @@ class Wallet {
     private fun checkIfTransferValueIsValid(value: BigDecimal) {
         if (value <= BigDecimal(0))
             throw InvalidTransactionValueException()
+    }
+
+    private fun checkIfDebitIsAllowedByUserType() {
+        if (user.type == UserType.SHOP_KEEPER)
+            throw ForbiddenTransactionException()
     }
 }

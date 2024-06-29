@@ -4,7 +4,7 @@ data class Document(val value: String) {
 
     init {
         require(value.isNotBlank()) { InvalidDocumentException("Document cannot be blank") }
-        require(isValid(value)) { InvalidDocumentException("Invalid document format") }
+        //require(isValid(value)) { InvalidDocumentException("Invalid document format") }
     }
 
     private fun isValid(value: String?): Boolean {
