@@ -9,17 +9,14 @@ import com.example.digitalwallet.core.domain.entity.Transaction
 import com.example.digitalwallet.core.domain.entity.Wallet
 import com.example.digitalwallet.core.domain.exception.ExternalTransactionAuthorizerDeniedException
 import com.example.digitalwallet.core.gateway.ExternalTransactionAuthorizerGateway
+import com.example.digitalwallet.core.gateway.RegisterTransactionDataSourceGateway
+import com.example.digitalwallet.core.gateway.TransactionManagementGateway
 import com.example.digitalwallet.core.gateway.UserFindByIdDataSourceGateway
 import com.example.digitalwallet.core.gateway.WalletFindByUserIdDataSourceGateway
 import com.example.digitalwallet.core.gateway.WalletUpdateDataSourceGateway
-import com.example.digitalwallet.core.gateway.RegisterTransactionDataSourceGateway
 import com.example.digitalwallet.core.usecase.TransferFundsUseCase
-import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
-import java.math.BigDecimal
 import java.util.UUID
 
-@Service
 class TransferFundsUseCaseImpl(
     private val userFindByIdDataSourceGateway: UserFindByIdDataSourceGateway,
     private val walletFindByUserIdDataSourceGateway: WalletFindByUserIdDataSourceGateway,
@@ -27,10 +24,10 @@ class TransferFundsUseCaseImpl(
     private val externalTransactionAuthorizerGateway: ExternalTransactionAuthorizerGateway,
     private val registerTransactionDataSourceGateway: RegisterTransactionDataSourceGateway,
     private val walletEntityMapper: WalletEntityMapper,
-    private val transactionEntityMapper: TransactionEntityMapper
+    private val transactionEntityMapper: TransactionEntityMapper,
+    private val transactionManagementGateway: TransactionManagementGateway
 ) : TransferFundsUseCase {
 
-    @Transactional
     override fun execute(input: TransferInputDto): TransactionDto {
         val (payerDto, payeeDto) = userFindByIdDataSourceGateway.execute(input.payer, input.payee)
         val (payerWalletDto, payeeWalletDto) = walletFindByUserIdDataSourceGateway.execute(payerDto.id, payeeDto.id)
@@ -43,26 +40,27 @@ class TransferFundsUseCaseImpl(
 
         checkIfAuthorizedToPerformTransfer(payerDto, payeeDto)
 
-        return makeTransactions(payerWallet, payeeWallet, input)
+        return makeTransaction(payerWallet, payeeWallet, input)
     }
 
-    fun makeTransactions(
+    private fun makeTransaction(
         payerWallet: Wallet,
         payeeWallet: Wallet,
         input: TransferInputDto,
     ): TransactionDto {
-        val transaction = Transaction(payerWallet, payeeWallet, input.value)
-        val transactionDto = transactionEntityMapper.toDto(transaction)
+        return transactionManagementGateway.doInTransaction {
+            val transaction = Transaction(payerWallet, payeeWallet, input.value)
+            val transactionDto = transactionEntityMapper.toDto(transaction)
 
-        walletUpdateDataSourceGateway.execute(
-            payerWallet = walletEntityMapper.toDto(payerWallet),
-            payeeWallet = walletEntityMapper.toDto(payeeWallet)
-        )
-        registerTransactionDataSourceGateway.execute(transactionDto)
+            walletUpdateDataSourceGateway.execute(
+                payerWallet = walletEntityMapper.toDto(payerWallet),
+                payeeWallet = walletEntityMapper.toDto(payeeWallet)
+            )
+            registerTransactionDataSourceGateway.execute(transactionDto)
 
-        checkIfPayerStillHaveBalance(payerWallet.id)
-
-        return transactionDto
+            checkIfPayerStillHaveBalance(payerWallet.id)
+            transactionDto
+        }
     }
 
     private fun checkIfPayerStillHaveBalance(payerWalletId: UUID) {
