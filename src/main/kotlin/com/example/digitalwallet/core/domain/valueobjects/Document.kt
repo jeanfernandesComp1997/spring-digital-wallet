@@ -4,22 +4,22 @@ data class Document(val value: String) {
 
     init {
         require(value.isNotBlank()) { InvalidDocumentException("Document cannot be blank") }
-        //require(isValid(value)) { InvalidDocumentException("Invalid document format") }
+        require(isValid(value)) { InvalidDocumentException("Invalid document format") }
     }
 
     private fun isValid(value: String?): Boolean {
-        if (value == null) return false
-        if (value == "00000000000"
-            || value == "11111111111"
-            || value == "22222222222"
-            || value == "33333333333"
-            || value == "44444444444"
-            || value == "55555555555"
-            || value == "66666666666"
-            || value == "77777777777"
-            || value == "88888888888"
-            || value == "99999999999"
-            || (value.length != 11)
+        val formattedValue = value?.replace(".", "")?.replace("-", "") ?: return false
+        if (formattedValue == "00000000000"
+            || formattedValue == "11111111111"
+            || formattedValue == "22222222222"
+            || formattedValue == "33333333333"
+            || formattedValue == "44444444444"
+            || formattedValue == "55555555555"
+            || formattedValue == "66666666666"
+            || formattedValue == "77777777777"
+            || formattedValue == "88888888888"
+            || formattedValue == "99999999999"
+            || (formattedValue.length != 11)
         ) return (false)
         val dig10: Char
         val dig11: Char
@@ -33,7 +33,7 @@ data class Document(val value: String) {
             peso = 10
             i = 0
             while (i < 9) {
-                num = (value[i].code - 48)
+                num = (formattedValue[i].code - 48)
                 sm += (num * peso)
                 peso -= 1
                 i++
@@ -45,7 +45,7 @@ data class Document(val value: String) {
             peso = 11
             i = 0
             while (i < 10) {
-                num = (value[i].code - 48)
+                num = (formattedValue[i].code - 48)
                 sm += (num * peso)
                 peso -= 1
                 i++
@@ -53,7 +53,7 @@ data class Document(val value: String) {
             r = 11 - (sm % 11)
             dig11 = if ((r == 10) || (r == 11)) '0'
             else (r + 48).toChar()
-            return (dig10 == value[9]) && (dig11 == value[10])
+            return (dig10 == formattedValue[9]) && (dig11 == formattedValue[10])
         } catch (error: Exception) {
             return (false)
         }
