@@ -4,6 +4,7 @@ import com.example.digitalwallet.common.mapper.TransactionAuthorizationMapper
 import com.example.digitalwallet.core.domain.dto.TransactionAuthorizationDto
 import com.example.digitalwallet.core.gateway.ExternalTransactionAuthorizerGateway
 import com.example.digitalwallet.gateway.http.authorizerservice.response.TransactionAuthorizationResponse
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import org.springframework.web.client.RestClient
@@ -20,14 +21,15 @@ class ExternalTransactionAuthorizerGatewayImpl(
         const val PAYEE_ID_HEADER_NAME = "payeeId"
     }
 
+    @CircuitBreaker(name = "transaction-authorizer-gateway")
     override fun checkTransactionAuthorization(payerId: String, payeeId: String): TransactionAuthorizationDto {
         val response = restClient
             .get()
             .uri("$baseUri/v2/authorize")
-//            .headers {
-//                it.add(PAYER_ID_HEADER_NAME, payerId)
-//                it.add(PAYEE_ID_HEADER_NAME, payeeId)
-//            }
+            .headers {
+                it.add(PAYER_ID_HEADER_NAME, payerId)
+                it.add(PAYEE_ID_HEADER_NAME, payeeId)
+            }
             .retrieve()
             .body(TransactionAuthorizationResponse::class.java)
             ?: throw RuntimeException("Cannot convert the rest client response.")
