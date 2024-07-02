@@ -4,7 +4,9 @@ import com.example.digitalwallet.application.rest.api.transfer.request.TransferR
 import com.example.digitalwallet.application.rest.api.transfer.response.TransferResponse
 import com.example.digitalwallet.common.mapper.TransferMapper
 import com.example.digitalwallet.core.usecase.TransferFundsUseCase
+import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
+import org.springframework.validation.annotation.Validated
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -18,7 +20,7 @@ class TransferController(
 ) {
 
     @PostMapping
-    fun transfer(@RequestBody transferRequest: TransferRequest): ResponseEntity<TransferResponse> {
+    fun transfer(@Valid @RequestBody transferRequest: TransferRequest): ResponseEntity<TransferResponse> {
         val transferResponse = transferFundsUseCase
             .execute(transferMapper.toDto(transferRequest))
             .let { transactionDto ->
