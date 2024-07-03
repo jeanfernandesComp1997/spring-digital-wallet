@@ -9,6 +9,7 @@ import com.example.digitalwallet.core.domain.dto.UserDto
 import com.example.digitalwallet.core.domain.entity.Transaction
 import com.example.digitalwallet.core.domain.entity.Wallet
 import com.example.digitalwallet.core.domain.exception.ExternalTransactionAuthorizerDeniedException
+import com.example.digitalwallet.core.domain.exception.InvalidUsersForTransferException
 import com.example.digitalwallet.core.gateway.ExternalTransactionAuthorizerGateway
 import com.example.digitalwallet.core.gateway.RegisterTransactionDataSourceGateway
 import com.example.digitalwallet.core.gateway.RegisterTransactionEventDataSourceGateway
@@ -32,6 +33,7 @@ class TransferFundsUseCaseImpl(
 ) : TransferFundsUseCase {
 
     override fun execute(input: TransferInputDto): TransactionDto {
+        validateUsersIds(input.payer, input.payee)
         val (payerDto, payeeDto) = userFindByIdDataSourceGateway.execute(input.payer, input.payee)
         val (payerWalletDto, payeeWalletDto) = walletFindByUserIdDataSourceGateway.execute(payerDto.id, payeeDto.id)
 
@@ -92,5 +94,9 @@ class TransferFundsUseCaseImpl(
         ) {
             throw ExternalTransactionAuthorizerDeniedException()
         }
+    }
+
+    private fun validateUsersIds(payerId: UUID, payeeId: UUID) {
+        if (payerId == payeeId) throw InvalidUsersForTransferException()
     }
 }

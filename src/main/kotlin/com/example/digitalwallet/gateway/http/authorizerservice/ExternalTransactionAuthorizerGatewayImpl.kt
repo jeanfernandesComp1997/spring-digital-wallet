@@ -2,10 +2,13 @@ package com.example.digitalwallet.gateway.http.authorizerservice
 
 import com.example.digitalwallet.common.mapper.TransactionAuthorizationMapper
 import com.example.digitalwallet.core.domain.dto.TransactionAuthorizationDto
+import com.example.digitalwallet.core.domain.exception.ExternalTransactionAuthorizerDeniedException
 import com.example.digitalwallet.core.gateway.ExternalTransactionAuthorizerGateway
 import com.example.digitalwallet.gateway.http.authorizerservice.response.TransactionAuthorizationResponse
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.http.HttpStatus
+import org.springframework.http.HttpStatusCode
 import org.springframework.stereotype.Component
 import org.springframework.web.client.RestClient
 
@@ -31,6 +34,10 @@ class ExternalTransactionAuthorizerGatewayImpl(
                 it.add(PAYEE_ID_HEADER_NAME, payeeId)
             }
             .retrieve()
+            .onStatus(HttpStatusCode::is4xxClientError) { _, response ->
+                if (response.statusCode.isSameCodeAs(HttpStatus.FORBIDDEN))
+                    throw ExternalTransactionAuthorizerDeniedException()
+            }
             .body(TransactionAuthorizationResponse::class.java)
             ?: throw RuntimeException("Cannot convert the rest client response.")
         return transactionAuthorizationMapper.toDto(response)
