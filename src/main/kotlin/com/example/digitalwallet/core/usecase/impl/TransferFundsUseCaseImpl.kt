@@ -3,6 +3,7 @@ package com.example.digitalwallet.core.usecase.impl
 import com.example.digitalwallet.common.mapper.TransactionEntityMapper
 import com.example.digitalwallet.common.mapper.WalletEntityMapper
 import com.example.digitalwallet.core.domain.dto.TransactionDto
+import com.example.digitalwallet.core.domain.dto.TransactionEventDto
 import com.example.digitalwallet.core.domain.dto.TransferInputDto
 import com.example.digitalwallet.core.domain.dto.UserDto
 import com.example.digitalwallet.core.domain.entity.Transaction
@@ -10,6 +11,7 @@ import com.example.digitalwallet.core.domain.entity.Wallet
 import com.example.digitalwallet.core.domain.exception.ExternalTransactionAuthorizerDeniedException
 import com.example.digitalwallet.core.gateway.ExternalTransactionAuthorizerGateway
 import com.example.digitalwallet.core.gateway.RegisterTransactionDataSourceGateway
+import com.example.digitalwallet.core.gateway.RegisterTransactionEventDataSourceGateway
 import com.example.digitalwallet.core.gateway.TransactionManagementGateway
 import com.example.digitalwallet.core.gateway.UserFindByIdDataSourceGateway
 import com.example.digitalwallet.core.gateway.WalletFindByUserIdDataSourceGateway
@@ -25,7 +27,8 @@ class TransferFundsUseCaseImpl(
     private val registerTransactionDataSourceGateway: RegisterTransactionDataSourceGateway,
     private val walletEntityMapper: WalletEntityMapper,
     private val transactionEntityMapper: TransactionEntityMapper,
-    private val transactionManagementGateway: TransactionManagementGateway
+    private val transactionManagementGateway: TransactionManagementGateway,
+    private val registerTransactionEventDataSourceGateway: RegisterTransactionEventDataSourceGateway
 ) : TransferFundsUseCase {
 
     override fun execute(input: TransferInputDto): TransactionDto {
@@ -51,12 +54,22 @@ class TransferFundsUseCaseImpl(
         return transactionManagementGateway.doInTransaction {
             val transaction = Transaction(payerWallet, payeeWallet, input.value)
             val transactionDto = transactionEntityMapper.toDto(transaction)
+            val transactionEventDto = TransactionEventDto(
+                id = UUID.randomUUID(),
+                payerFirstName = payerWallet.user.firstName,
+                payeeFirstName = payeeWallet.user.firstName,
+                payerEmail = payerWallet.user.email.address,
+                payeeEmail = payeeWallet.user.email.address,
+                transaction.amount,
+                transaction.date
+            )
 
             walletUpdateDataSourceGateway.execute(
                 payerWallet = walletEntityMapper.toDto(payerWallet),
                 payeeWallet = walletEntityMapper.toDto(payeeWallet)
             )
             registerTransactionDataSourceGateway.execute(transactionDto)
+            registerTransactionEventDataSourceGateway.execute(transactionEventDto)
 
             checkIfPayerStillHaveBalance(payerWallet.id)
             transactionDto

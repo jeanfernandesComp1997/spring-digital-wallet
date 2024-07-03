@@ -20,6 +20,34 @@ spring:
         format_sql: true
     #defer-datasource-initialization: true
 
+resilience4j.circuitbreaker:
+  instances:
+    transaction-authorizer-gateway:
+      slidingWindowType: COUNT_BASED #TIME_BASED // COUNT_BASED
+      slidingWindowSize: 4
+      minimumNumberOfCalls: 10
+      failureRateThreshold: 50
+      waitDurationInOpenState: 10s
+      permittedNumberOfCallsInHalfOpenState: 2
+      recordExceptions:
+        - org.springframework.web.client.HttpServerErrorException.BadGateway
+        - org.springframework.web.client.HttpServerErrorException.GatewayTimeout
+        - org.springframework.web.client.HttpServerErrorException.InternalServerError
+        - org.springframework.web.client.HttpServerErrorException.ServiceUnavailable
+
+resilience4j.retry:
+  instances:
+    transaction-authorizer-gateway:
+      maxAttempts: 3
+      waitDuration: 500
+      enableExponentialBackoff: true
+      exponentialBackoffMultiplier: 2
+      retryExceptions:
+        - org.springframework.web.client.HttpServerErrorException.BadGateway
+        - org.springframework.web.client.HttpServerErrorException.GatewayTimeout
+        - org.springframework.web.client.HttpServerErrorException.InternalServerError
+        - org.springframework.web.client.HttpServerErrorException.ServiceUnavailable
+
 management:
   endpoints:
     web:

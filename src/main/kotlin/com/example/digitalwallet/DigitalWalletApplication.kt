@@ -4,8 +4,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 
 @SpringBootApplication
-class DigitalwalletApplication
+class DigitalWalletApplication
 
 fun main(args: Array<String>) {
-    runApplication<DigitalwalletApplication>(*args)
+    runApplication<DigitalWalletApplication>(*args)
 }
