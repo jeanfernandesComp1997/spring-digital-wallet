@@ -1,10 +1,10 @@
 package com.example.digitalwallet.core.usecase.impl
 
 import com.example.digitalwallet.common.mapper.TransactionEntityMapper
+import com.example.digitalwallet.common.mapper.TransactionEventMapper
 import com.example.digitalwallet.common.mapper.WalletEntityMapper
 import com.example.digitalwallet.core.domain.annotations.Loggable
 import com.example.digitalwallet.core.domain.dto.TransactionDto
-import com.example.digitalwallet.core.domain.dto.TransactionEventDto
 import com.example.digitalwallet.core.domain.dto.TransferInputDto
 import com.example.digitalwallet.core.domain.dto.UserDto
 import com.example.digitalwallet.core.domain.entity.Transaction
@@ -29,7 +29,8 @@ open class TransferFundsUseCaseImpl(
     private val walletEntityMapper: WalletEntityMapper,
     private val transactionEntityMapper: TransactionEntityMapper,
     private val transactionManagementGateway: TransactionManagementGateway,
-    private val registerTransactionEventDataSourceGateway: RegisterTransactionEventDataSourceGateway
+    private val registerTransactionEventDataSourceGateway: RegisterTransactionEventDataSourceGateway,
+    private val transactionEventMapper: TransactionEventMapper
 ) : TransferFundsUseCase {
 
     @Loggable
@@ -65,15 +66,11 @@ open class TransferFundsUseCaseImpl(
             val transaction =
                 Transaction(payerWallet = payerWallet, payeeWallet = payeeWallet, amount = transferInput.value)
             val transactionDto = transactionEntityMapper.toDto(transaction)
-            val transactionEventDto = TransactionEventDto(
+            val transactionEventDto = transactionEventMapper.toDto(
                 id = UUID.randomUUID(),
-                payerFirstName = payerWallet.user.firstName,
-                payeeFirstName = payeeWallet.user.firstName,
-                payerEmail = payerWallet.user.email.address,
-                payeeEmail = payeeWallet.user.email.address,
-                amount = transaction.amount,
-                date = transaction.date,
-                processed = false
+                payerWallet = payerWallet,
+                payeeWallet = payeeWallet,
+                transaction = transaction
             )
 
             walletUpdateDataSourceGateway.execute(

@@ -1,6 +1,7 @@
 package com.example.digitalwallet.application.configuration
 
 import com.example.digitalwallet.common.mapper.TransactionEntityMapper
+import com.example.digitalwallet.common.mapper.TransactionEventMapper
 import com.example.digitalwallet.common.mapper.WalletEntityMapper
 import com.example.digitalwallet.core.gateway.ExternalTransactionAuthorizerGateway
 import com.example.digitalwallet.core.gateway.RegisterTransactionDataSourceGateway
@@ -27,7 +28,8 @@ class Ioc {
         walletEntityMapper: WalletEntityMapper,
         transactionEntityMapper: TransactionEntityMapper,
         transactionManagementGateway: TransactionManagementGateway,
-        registerTransactionEventDataSourceGateway: RegisterTransactionEventDataSourceGateway
+        registerTransactionEventDataSourceGateway: RegisterTransactionEventDataSourceGateway,
+        transactionEventMapper: TransactionEventMapper
     ): TransferFundsUseCase {
         return TransferFundsUseCaseImpl(
             userFindByIdDataSourceGateway,
@@ -38,7 +40,8 @@ class Ioc {
             walletEntityMapper,
             transactionEntityMapper,
             transactionManagementGateway,
-            registerTransactionEventDataSourceGateway
+            registerTransactionEventDataSourceGateway,
+            transactionEventMapper
         )
     }
 }
