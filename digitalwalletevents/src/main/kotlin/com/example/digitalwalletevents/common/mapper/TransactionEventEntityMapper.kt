@@ -16,6 +16,8 @@ class TransactionEventEntityMapper {
             transactionEventDto.payeeEmail,
             transactionEventDto.amount,
             transactionEventDto.date,
+            transactionEventDto.transactionEventType,
+            transactionEventDto.sent,
             transactionEventDto.processed
         )
     }
@@ -29,6 +31,8 @@ class TransactionEventEntityMapper {
             transactionEvent.payeeEmail,
             transactionEvent.amount,
             transactionEvent.date,
+            transactionEvent.transactionEventType,
+            transactionEvent.sent,
             transactionEvent.processed
         )
     }

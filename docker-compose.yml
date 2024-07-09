@@ -22,7 +22,15 @@ services:
 
   rabbitmq:
     image: rabbitmq:3-management-alpine
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    volumes:
+      - ./infra/rabbitmq/rabbitmq.config:/etc/rabbitmq/rabbitmq.config:ro
+      - ./infra/rabbitmq/definitions.json:/etc/rabbitmq/definitions.json:ro
     container_name: 'rabbitmq'
     ports:
       - 5672:5672
       - 15672:15672
+
+# https://stackoverflow.com/questions/58266688/how-to-create-a-queue-in-rabbitmq-upon-startup

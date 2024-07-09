@@ -6,6 +6,8 @@ import com.example.digitalwalletevents.core.gateway.PostTransactionEventQueueGat
 import com.fasterxml.jackson.databind.json.JsonMapper
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import org.springframework.amqp.core.AmqpTemplate
+import org.springframework.amqp.core.MessageBuilder
+import org.springframework.amqp.core.MessageProperties
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 
@@ -20,10 +22,16 @@ class PostTransactionEventQueueGatewayImpl(
 
     @Loggable
     override fun execute(transaction: TransactionEventDto) {
+        val properties = MessageProperties()
+        properties.delayLong = 10000L
+
         amqpTemplate.convertAndSend(
             transactionEventExchange,
             transactionEventRoutingKey,
-            jsonMapper.writeValueAsString(transaction)
+            MessageBuilder
+                .withBody(jsonMapper.writeValueAsString(transaction).toByteArray())
+                .andProperties(properties)
+                .build()
         )
     }
 }

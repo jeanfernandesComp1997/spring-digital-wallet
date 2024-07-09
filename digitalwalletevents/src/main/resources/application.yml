@@ -24,7 +24,40 @@ spring:
         show_sql: false
         format_sql: false
 
-
 transaction-event:
   exchange: transaction-event-exchange
   routing-key: transaction-event-routing-key
+
+resilience4j.circuitbreaker:
+  instances:
+    transaction-notify-gateway:
+      slidingWindowType: COUNT_BASED #TIME_BASED // COUNT_BASED
+      slidingWindowSize: 4
+      minimumNumberOfCalls: 10
+      failureRateThreshold: 50
+      waitDurationInOpenState: 10s
+      permittedNumberOfCallsInHalfOpenState: 2
+      recordExceptions:
+        - org.springframework.web.client.HttpServerErrorException.BadGateway
+        - org.springframework.web.client.HttpServerErrorException.GatewayTimeout
+        - org.springframework.web.client.HttpServerErrorException.InternalServerError
+        - org.springframework.web.client.HttpServerErrorException.ServiceUnavailable
+
+resilience4j.retry:
+  instances:
+    transaction-notify-gateway:
+      maxAttempts: 5
+      waitDuration: 500
+      enableExponentialBackoff: true
+      exponentialBackoffMultiplier: 2
+      retryExceptions:
+        - org.springframework.web.client.HttpServerErrorException.BadGateway
+        - org.springframework.web.client.HttpServerErrorException.GatewayTimeout
+        - org.springframework.web.client.HttpServerErrorException.InternalServerError
+        - org.springframework.web.client.HttpServerErrorException.ServiceUnavailable
+
+
+external-services:
+  transaction-notify:
+    base-uri: "https://util.devi.tools/api"
+    from-email: "digital-wallet@email.com"

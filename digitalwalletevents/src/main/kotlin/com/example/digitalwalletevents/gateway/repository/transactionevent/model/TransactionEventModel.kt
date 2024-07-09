@@ -23,5 +23,8 @@ data class TransactionEventModel(
     val payeeEmail: String,
     val amount: BigDecimal,
     val date: ZonedDateTime,
+    @Column(name = "transaction_event_type")
+    val transactionEventType: String,
+    val sent: Boolean,
     val processed: Boolean
 )

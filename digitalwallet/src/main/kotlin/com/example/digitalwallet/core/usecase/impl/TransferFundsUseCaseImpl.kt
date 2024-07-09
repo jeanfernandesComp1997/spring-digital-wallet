@@ -8,6 +8,7 @@ import com.example.digitalwallet.core.domain.dto.TransactionDto
 import com.example.digitalwallet.core.domain.dto.TransferInputDto
 import com.example.digitalwallet.core.domain.dto.UserDto
 import com.example.digitalwallet.core.domain.entity.Transaction
+import com.example.digitalwallet.core.domain.enums.TransactionEventType
 import com.example.digitalwallet.core.domain.exception.ExternalTransactionAuthorizerDeniedException
 import com.example.digitalwallet.core.domain.exception.InvalidUsersForTransferException
 import com.example.digitalwallet.core.gateway.ExternalTransactionAuthorizerGateway
@@ -66,11 +67,20 @@ open class TransferFundsUseCaseImpl(
             val transaction =
                 Transaction(payerWallet = payerWallet, payeeWallet = payeeWallet, amount = transferInput.value)
             val transactionDto = transactionEntityMapper.toDto(transaction)
-            val transactionEventDto = transactionEventMapper.toDto(
+            val payerTransactionEventDto = transactionEventMapper.toDto(
                 id = UUID.randomUUID(),
                 payerWallet = payerWallet,
                 payeeWallet = payeeWallet,
-                transaction = transaction
+                transaction = transaction,
+                transactionEventType = TransactionEventType.PAYER
+            )
+
+            val payeeTransactionEventDto = transactionEventMapper.toDto(
+                id = UUID.randomUUID(),
+                payerWallet = payerWallet,
+                payeeWallet = payeeWallet,
+                transaction = transaction,
+                transactionEventType = TransactionEventType.PAYEE
             )
 
             walletUpdateDataSourceGateway.execute(
@@ -78,7 +88,8 @@ open class TransferFundsUseCaseImpl(
                 payeeWallet = walletEntityMapper.toDto(payeeWallet)
             )
             registerTransactionDataSourceGateway.execute(transaction = transactionDto)
-            registerTransactionEventDataSourceGateway.execute(transactionEvent = transactionEventDto)
+            registerTransactionEventDataSourceGateway.execute(transactionEvent = payerTransactionEventDto)
+            registerTransactionEventDataSourceGateway.execute(transactionEvent = payeeTransactionEventDto)
 
             transactionDto
         }
