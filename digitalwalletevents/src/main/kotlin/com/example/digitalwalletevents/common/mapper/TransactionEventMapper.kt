@@ -8,4 +8,6 @@ import org.mapstruct.Mapper
 interface TransactionEventMapper {
 
     fun toDto(transactionEventModel: TransactionEventModel): TransactionEventDto
+
+    fun toModel(transactionEventDto: TransactionEventDto): TransactionEventModel
 }

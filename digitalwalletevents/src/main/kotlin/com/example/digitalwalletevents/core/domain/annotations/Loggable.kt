@@ -1,4 +1,4 @@
-package com.example.digitalwallet.core.domain.annotations
+package com.example.digitalwalletevents.core.domain.annotations
 
 @Target(AnnotationTarget.FUNCTION)
 @Retention(AnnotationRetention.RUNTIME)

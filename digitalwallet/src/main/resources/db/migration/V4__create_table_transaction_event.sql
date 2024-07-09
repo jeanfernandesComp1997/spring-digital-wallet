@@ -6,6 +6,7 @@ CREATE TABLE transaction_event (
     payee_email VARCHAR(80) NOT NULL,
     amount DECIMAL(15, 2),
     "date" TIMESTAMPTZ NOT NULL,
+    sent BOOLEAN,
     processed BOOLEAN
 );
 
